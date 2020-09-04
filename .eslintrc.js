@@ -3,12 +3,11 @@ module.exports = {
     GlRenderer: true,
     glDoodle: true,
     ControlKit: true,
-    __DEV__: true,
   },
-  extends: 'eslint-config-sprite',
+  extends: 'airbnb-base',
   env: {
     browser: true,
-    mocha: true,
+    mocha: false,
   },
   plugins: ['html'],
   rules: {
