@@ -22,6 +22,7 @@ async function render() {
 
   const texture = await renderer.loadTexture(config.texture);
   renderer.uniforms.u_texture = texture;
+  // eslint-disable-next-line no-underscore-dangle
   const { width, height } = texture._img;
   renderer.uniforms.u_textureSize = [width, height];
 
