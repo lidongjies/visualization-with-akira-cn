@@ -31,9 +31,12 @@
     "http-server": "^0.12.1"
   },
   "dependencies": {
+    "claygl": "^1.3.0",
+    "controlkit": "git+https://github.com/automat/controlkit.js.git",
     "gl-renderer": "^0.13.6",
     "glsl-doodle": "^0.2.0",
     "rough": "^3.0.1",
+    "rxjs": "^6.6.2",
     "spritejs": "^3.7.24"
   }
 }
