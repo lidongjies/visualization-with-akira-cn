@@ -1,0 +1,39 @@
+{
+  "name": "visualization-with-akira-cn",
+  "version": "1.0.0",
+  "description": "极客时间专栏《跟月影学可视化》课后练习题",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "http-server -c-1 -p5000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lidongjies/visualization-with-akira-cn.git"
+  },
+  "keywords": [
+    "visualization",
+    "graphics"
+  ],
+  "author": "jaye lee <lidongjies@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lidongjies/visualization-with-akira-cn/issues"
+  },
+  "homepage": "https://github.com/lidongjies/visualization-with-akira-cn#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-sprite": "^1.0.6",
+    "eslint-plugin-html": "^6.0.0",
+    "http-server": "^0.12.1"
+  },
+  "dependencies": {
+    "gl-renderer": "^0.13.6",
+    "glsl-doodle": "^0.2.0",
+    "rough": "^3.0.1",
+    "spritejs": "^3.7.24"
+  }
+}
