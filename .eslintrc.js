@@ -14,5 +14,7 @@ module.exports = {
     complexity: ['warn', 25],
     'import/prefer-default-export': 'off',
     'no-unused-vars': 'warn',
+    'import/extensions': 'off',
+    'comma/dangle': 'off',
   },
 };
