@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hierarchy Data</title>
+    <title>Hierarchy Data by Canvas</title>
     <style>
       #canvas {
         width: 800px;
@@ -15,36 +15,37 @@
     <canvas width="1600" height="1600" id="canvas"></canvas>
     <script src="https://d3js.org/d3-hierarchy.v2.min.js"></script>
     <script type="module">
-      const HOVER_COLOR = '#e74c3c';
+      const ACTIVE_COLOR = '#80b8bc';
       const colors = ['#95a5a6', '#7f8c8d', '#6d7374'];
       const dataSource = 'https://s5.ssl.qhres.com/static/b0695e2dd30daa64.json';
+      const displayRatio = 2;
 
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
 
-      function drawCircle(ctx, node, { fillColor }) {
-        const { x, y, r } = node;
-        ctx.fillStyle = fillColor;
+      function drawCircle(ctx, node) {
+        const { x, y, r, bgcolor } = node;
+        ctx.fillStyle = bgcolor;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, 2 * Math.PI);
         ctx.fill();
       }
 
-      function drawText(ctx, node, { textColor = '#fff' } = {}) {
+      function drawText(ctx, node) {
         const {
           x,
           y,
           data: { name },
         } = node;
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = '#fff';
         ctx.font = '1.5rem Arial';
         ctx.textAlign = 'center';
         ctx.fillText(name, x, y);
       }
 
       function draw(ctx, node) {
+        drawCircle(ctx, node);
         const children = node.children;
-        drawCircle(ctx, node, { fillColor: colors[node.depth % colors.length] });
         if (children) {
           for (let i = 0; i < children.length; i++) {
             draw(ctx, children[i]);
@@ -54,8 +55,33 @@
         }
       }
 
-      function inCircle({ r, x, y }, { cx, cy }) {
-        return Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) <= r;
+      function inCircle({ cx, cy }) {
+        return function ({ x, y, r }) {
+          return Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) <= r;
+        };
+      }
+
+      function find(root, fn) {
+        let node;
+
+        function findNode(list) {
+          for (let i = 0; i < list.length; i++) {
+            if (fn(list[i])) {
+              node = list[i];
+              if (!node.children) {
+                throw new Error();
+              } else {
+                findNode(node.children);
+              }
+            }
+          }
+        }
+
+        try {
+          findNode([root]);
+        } catch (e) {}
+
+        return node;
       }
 
       (async function main() {
@@ -63,19 +89,26 @@
         const regions = d3
           .hierarchy(regionsRaw)
           .sum((d) => 1)
-          .sort((a, b) => a.value - b.value);
+          .sort((a, b) => a.value - b.value)
+          .each((node) => (node.bgcolor = colors[node.depth]));
         const pack = d3.pack().size([1600, 1600]).padding(3);
         const root = pack(regions);
 
+        let activeNode;
         canvas.addEventListener('mousemove', (e) => {
           const { x: cx, y: cy } = e;
-          const node = root.find((node) => {
-            return inCircle(node, { cx: cx * 2, cy: cy * 2 }) && node.depth > 1;
-          });
-          if (node) {
+          const filter = inCircle({ cx: cx * displayRatio, cy: cy * displayRatio });
+          const node = find(root, filter);
+
+          if (node !== activeNode) {
+            if (activeNode) {
+              activeNode.bgcolor = colors[activeNode.depth];
+            }
+            if (node) {
+              node.bgcolor = ACTIVE_COLOR;
+            }
             draw(ctx, root);
-            drawCircle(ctx, node, { fillColor: HOVER_COLOR });
-            drawText(ctx, node);
+            activeNode = node;
           }
         });
 

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hierarchy Data by SVG</title>
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"></svg>
+    <script src="https://d3js.org/d3-hierarchy.v2.min.js"></script>
+    <script type="module">
+      const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+      const ACTIVE_COLOR = '#80b8bc';
+      const colors = ['#95a5a6', '#7f8c8d', '#6d7374'];
+      const dataSource = 'https://s5.ssl.qhres.com/static/b0695e2dd30daa64.json';
+      const displayRatio = 2;
+      const svgroot = document.querySelector('svg');
+
+      function draw(parent, node) {
+        const { r, x, y, depth, children } = node;
+        const circle = document.createElementNS(SVG_NAMESPACE, 'circle');
+        circle.dataset.depth = depth;
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', colors[depth]);
+        parent.appendChild(circle);
+
+        if (children) {
+          const group = document.createElementNS(SVG_NAMESPACE, 'g');
+          for (let i = 0; i < children.length; i++) {
+            draw(group, children[i]);
+          }
+          parent.appendChild(group);
+        } else {
+          const text = document.createElementNS(SVG_NAMESPACE, 'text');
+          text.setAttribute('fill', '#fff');
+          text.setAttribute('font-family', 'Arial');
+          text.setAttribute('font-size', '1.5rem');
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('x', x);
+          text.setAttribute('y', y);
+          const name = node.data.name;
+          text.textContent = name;
+          parent.appendChild(text);
+        }
+      }
+
+      (async function main() {
+        const regionsRaw = await (await fetch(dataSource)).json();
+        const regions = d3
+          .hierarchy(regionsRaw)
+          .sum((d) => 1)
+          .sort((a, b) => a.value - b.value)
+          .each((node) => (node.bgcolor = colors[node.depth]));
+        const pack = d3.pack().size([1600, 1600]).padding(3);
+        const root = pack(regions);
+
+        let activeTarget;
+        svgroot.addEventListener('mousemove', (e) => {
+          let target = e.target;
+          if (e.target.tagName === 'text') target = target.parentNode;
+
+          if (activeTarget !== target) {
+            if (activeTarget) {
+              const depth = parseInt(activeTarget.dataset.depth, 10);
+              activeTarget.setAttribute('fill', colors[depth]);
+            }
+          }
+
+          if (target) {
+            target.setAttribute('fill', ACTIVE_COLOR);
+            activeTarget = target;
+          }
+        });
+
+        draw(svgroot, root);
+      })();
+    </script>
+  </body>
+</html>
