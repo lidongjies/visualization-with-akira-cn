@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hierarchy Data</title>
+    <style>
+      #canvas {
+        width: 800px;
+        height: 800px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="1600" height="1600" id="canvas"></canvas>
+    <script src="https://d3js.org/d3-hierarchy.v2.min.js"></script>
+    <script type="module">
+      const HOVER_COLOR = '#e74c3c';
+      const colors = ['#95a5a6', '#7f8c8d', '#6d7374'];
+      const dataSource = 'https://s5.ssl.qhres.com/static/b0695e2dd30daa64.json';
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      function drawCircle(ctx, node, { fillColor }) {
+        const { x, y, r } = node;
+        ctx.fillStyle = fillColor;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      function drawText(ctx, node, { textColor = '#fff' } = {}) {
+        const {
+          x,
+          y,
+          data: { name },
+        } = node;
+        ctx.fillStyle = textColor;
+        ctx.font = '1.5rem Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(name, x, y);
+      }
+
+      function draw(ctx, node) {
+        const children = node.children;
+        drawCircle(ctx, node, { fillColor: colors[node.depth % colors.length] });
+        if (children) {
+          for (let i = 0; i < children.length; i++) {
+            draw(ctx, children[i]);
+          }
+        } else {
+          drawText(ctx, node);
+        }
+      }
+
+      function inCircle({ r, x, y }, { cx, cy }) {
+        return Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) <= r;
+      }
+
+      (async function main() {
+        const regionsRaw = await (await fetch(dataSource)).json();
+        const regions = d3
+          .hierarchy(regionsRaw)
+          .sum((d) => 1)
+          .sort((a, b) => a.value - b.value);
+        const pack = d3.pack().size([1600, 1600]).padding(3);
+        const root = pack(regions);
+
+        canvas.addEventListener('mousemove', (e) => {
+          const { x: cx, y: cy } = e;
+          const node = root.find((node) => {
+            return inCircle(node, { cx: cx * 2, cy: cy * 2 }) && node.depth > 1;
+          });
+          if (node) {
+            draw(ctx, root);
+            drawCircle(ctx, node, { fillColor: HOVER_COLOR });
+            drawText(ctx, node);
+          }
+        });
+
+        draw(ctx, root);
+      })();
+    </script>
+  </body>
+</html>

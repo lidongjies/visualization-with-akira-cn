@@ -2,13 +2,11 @@
   "name": "visualization-with-akira-cn",
   "version": "1.0.0",
   "description": "极客时间专栏《跟月影学可视化》课后练习题",
-  "main": "index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "start": "http-server -c-1 -p5500",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "http-server -c-1 -p5500"
   },
   "repository": {
     "type": "git",
